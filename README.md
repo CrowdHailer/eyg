@@ -32,3 +32,4 @@ single librarian looks after a catalogue of books.1
   - simplified generation for property based testing
 - abstract the computer but not the communication protocols
 - separate ok/error for invalid values from ok/error for side effect failures, one is memoizable the other is not
+- pattern match on regex's and sets containing a value. Make pattern matching a macro that is extensible?!
