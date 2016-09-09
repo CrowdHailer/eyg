@@ -33,3 +33,23 @@ single librarian looks after a catalogue of books.1
 - abstract the computer but not the communication protocols
 - separate ok/error for invalid values from ok/error for side effect failures, one is memoizable the other is not
 - pattern match on regex's and sets containing a value. Make pattern matching a macro that is extensible?!
+- Make it possible to return a match object. some kind of curried function
+
+```elixir
+a = Task.do(stuff)
+b = Task.do(stuff)
+
+receive do
+  a(foo) ->
+    IO.puts "#{foo} wins"
+  b(bar) ->
+    IO.puts "#{bar} wind"
+end
+```
+```elixir
+m = %{name: $var, age: 30}
+m(var: x) = %{name: "dave", age: 30}
+# also 
+m(var: "brian") = %{name: "dave", age: 30} 
+# NO match
+```
