@@ -25,6 +25,30 @@ single librarian looks after a catalogue of books.1
 
 ## Details
 
+### Functional vs OOP
+
+Functional starts from pure concepts and works down to providing implementations. OOP was the result of working up from instructions that manipulate registers. OOP is optimised for users who understand computers but the best programs should not require any knowledge of the implementation of the execution.
+
+Logic programming looks like it starts with even higher abstractions an so might be an even better starting point.
+
+### Facts and Actors (Episodic time model)
+
+An entity is a timeseries of facts with a common unique identifier.
+The evolution of time should be modeled as a pure function on the history of all causal events on interacting timelines.
+
+Rick Hickey talks about the episodic time model, but it needs extending to allow concurrency.
+
+### All side effects as changes to a state
+
+Model of mocking services
+client <--> server <--> service.
+
+New model
+peer <--> db <--> DB <--> worker
+
+regard random numbers as an array in the database.
+Requests to send email should be added to the data store.
+
 - Single integer/fraction type
 - types as sets of acceptable binary values
   - extend type system onto the wire, Joe Armstrong UBF
@@ -53,3 +77,5 @@ m(var: x) = %{name: "dave", age: 30}
 m(var: "brian") = %{name: "dave", age: 30} 
 # NO match
 ```
+
+look at erl2
