@@ -31,6 +31,8 @@ Functional starts from pure concepts and works down to providing implementations
 
 Logic programming looks like it starts with even higher abstractions an so might be an even better starting point.
 
+There is a convergence in language design when hard problems are involved. make the most of it https://www.info.ucl.ac.be/~pvr/flopsPVRarticle.pdf
+
 ### Facts and Actors (Episodic time model)
 
 An entity is a timeseries of facts with a common unique identifier.
@@ -79,3 +81,8 @@ m(var: "brian") = %{name: "dave", age: 30}
 ```
 
 look at erl2
+
+- Should make nondeterminism impossible, look at bloom and lasp
+- tools to make causality tracking easy are needed to allow causality in the application layer http://blog.jessitron.com/2016/09/provenance-and-causality-in-distributed.html
+- causality tracking and a large enough quorum allows persisten DB to be dropped. Have a client that replicates the live data to a db but is a minor player.
+
