@@ -86,3 +86,4 @@ look at erl2
 - tools to make causality tracking easy are needed to allow causality in the application layer http://blog.jessitron.com/2016/09/provenance-and-causality-in-distributed.html
 - causality tracking and a large enough quorum allows persisten DB to be dropped. Have a client that replicates the live data to a db but is a minor player.
 
+- no special primitives. set equally important as list. binary(string) is only primitive.
