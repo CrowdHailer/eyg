@@ -87,3 +87,10 @@ look at erl2
 - causality tracking and a large enough quorum allows persisten DB to be dropped. Have a client that replicates the live data to a db but is a minor player.
 
 - no special primitives. set equally important as list. binary(string) is only primitive.
+
+have a map syntax which returns option type but is set up with direct types
+
+```
+m = %{val: 5}
+m.val = maybe[int]
+```
