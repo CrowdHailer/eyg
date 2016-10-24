@@ -1,15 +1,21 @@
 # eyg
-Language ideas
+**Trying to realise an "Order of Magnitude" improvement in productivity.**
+I think it is possible but that more than one issue needs to be solved to realise it.
 
 ## Mission
 - Change the concept of legacy apps to established apps
 - Optimise longterm developer happiness
+- Extend domain knowledge to include time.
 - Careful use of language. Facts and Actors make a better vocabulary that Classes and instances
 
 > Personification is misleading and harms adoption of immutability
 > Silly comment like destroy the person and create a new one with a different name.
 
 > In a system a customer is a role. A role has expectations, expectations are replaced not updtated. therefore a role is immutable and has versions. The customer is not an immutable person but an immutable role.
+
+> The resolution of conflicts and requirement for coordination are both domain issues. Therefore a separate database is a bad abstraction and in fact we need tools to ensure data consistency over time.
+
+> Cache invalidation is hard because it is the wrong abstraction. A cache should never need to be invalidated as facts never go off.
 
 
 Function from the point of a great story
@@ -94,3 +100,33 @@ have a map syntax which returns option type but is set up with direct types
 m = %{val: 5}
 m.val = maybe[int]
 ```
+
+try `.cz` domain for causality -> because -> cz
+
+possibly switch entirly to green blue deploy in stateful ring remove relups.
+
+OR
+
+have type system check the possibility of relups.
+
+have messages sent all through a loop using genserver reply only. or have all messages to be sent returned in a map. one list is the list of messages to add to the log.
+having them returned at the end allows it to be considered as a transaction.
+
+Should a process write to its own state or have the ability to write to the mailbox of another.
+
+Need a Javascript example with email sending, random numbers and a global uniqueness request.
+
+Need consistency between startup as a script, as a new node as a process.
+
+## Nirvana
+1. Immutability, domain understanding of facts and actors.
+2. EventStore/redux, there are no caches to invalidate in an event log.
+3. N-temporal eventstore/causality tracking, true representation of the clients actions distribution was always there.
+4. Eventlog filterering/projections, provide actors with usable subsets of all history for decision making(both in time and space)
+5. Intention recording and corroboration. Instead of calls to remote services worker pattern from pouchdb.
+6. Enumerated program outcomes, logic programing with a time model allows effects of raceconditions to be ascertained.
+
+CRDT's should be a stable point solution to enumerating program outcomes.
+Most useful resources on this are disorderly programming.
+
+https://disorderlylabs.github.io/
