@@ -130,3 +130,5 @@ CRDT's should be a stable point solution to enumerating program outcomes.
 Most useful resources on this are disorderly programming.
 
 https://disorderlylabs.github.io/
+
+CALM add only facts
