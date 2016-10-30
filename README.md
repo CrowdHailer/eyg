@@ -132,3 +132,5 @@ Most useful resources on this are disorderly programming.
 https://disorderlylabs.github.io/
 
 CALM add only facts
+
+program state saveable for debugging. see eve example. state should enclude sha of source file.
