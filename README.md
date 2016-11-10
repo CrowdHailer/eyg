@@ -2,6 +2,8 @@
 **Trying to realise an "Order of Magnitude" improvement in productivity.**
 I think it is possible but that more than one issue needs to be solved to realise it.
 
+framework -> modular first. from hanami
+
 ## Mission
 - Change the concept of legacy apps to established apps
 - Optimise longterm developer happiness
