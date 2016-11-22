@@ -42,6 +42,7 @@ Logic programming looks like it starts with even higher abstractions an so might
 There is a convergence in language design when hard problems are involved. make the most of it https://www.info.ucl.ac.be/~pvr/flopsPVRarticle.pdf
 
 ### Facts and Actors (Episodic time model)
+https://youtu.be/fhOHn9TClXY?t=750 computer as an atom of meaning
 
 An entity is a timeseries of facts with a common unique identifier.
 The evolution of time should be modeled as a pure function on the history of all causal events on interacting timelines.
