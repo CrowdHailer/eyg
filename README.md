@@ -60,6 +60,26 @@ peer <--> db <--> DB <--> worker
 regard random numbers as an array in the database.
 Requests to send email should be added to the data store.
 
+### Pure messaging semantics
+
+```
+Math({:div, 5, 3})
+```
+
+send module this message
+```
+fn ({:div, 5, 3}) ->
+  $Creator.send("hi")
+  $STDOUT.send("hi")
+  $STDERR.send("ooh")
+  $STDOUT.send("bill")
+  newstate
+  
+{newstate, {$Creator: ["hi], $STDOUT: ["hi", "bill"]}
+```
+
+This looks like it should be called the message monad. process references that you do not pass should be macros.
+
 - Single integer/fraction type
 - types as sets of acceptable binary values
   - extend type system onto the wire, Joe Armstrong UBF
