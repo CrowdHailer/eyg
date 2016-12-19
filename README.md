@@ -108,6 +108,14 @@ m(var: x) = %{name: "dave", age: 30}
 m(var: "brian") = %{name: "dave", age: 30} 
 # NO match
 ```
+### Well describe protocols
+
+ask(Question) -> reply(Answer)
+subscribe(Channel) -> notify(Update)
+stream(content) -> chunk(section)
+
+google RPC vs request/response.
+
 
 look at erl2
 
