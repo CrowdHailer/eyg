@@ -78,6 +78,9 @@ fn ({:div, 5, 3}) ->
 {newstate, {$Creator: ["hi], $STDOUT: ["hi", "bill"]}
 ```
 
+in tests you can pass the test pid instead of a module and see the messages that were sent.
+Make *stubbing?* a generic part of the language.
+
 This looks like it should be called the message monad. process references that you do not pass should be macros.
 
 - Single integer/fraction type
