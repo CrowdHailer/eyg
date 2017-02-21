@@ -74,7 +74,7 @@ fn ({:div, 5, 3}) ->
   $STDERR.send("ooh")
   $STDOUT.send("bill")
   newstate
-  
+
 {newstate, {$Creator: ["hi], $STDOUT: ["hi", "bill"]}
 ```
 
@@ -107,8 +107,8 @@ end
 ```elixir
 m = %{name: $var, age: 30}
 m(var: x) = %{name: "dave", age: 30}
-# also 
-m(var: "brian") = %{name: "dave", age: 30} 
+# also
+m(var: "brian") = %{name: "dave", age: 30}
 # NO match
 ```
 ### Well describe protocols
@@ -151,6 +151,10 @@ Should a process write to its own state or have the ability to write to the mail
 Need a Javascript example with email sending, random numbers and a global uniqueness request.
 
 Need consistency between startup as a script, as a new node as a process.
+
+# Patterns as Types.
+
+This could be a thing
 
 ## Nirvana
 1. Immutability, domain understanding of facts and actors.

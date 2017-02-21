@@ -90,6 +90,15 @@ defmodule MyStateMachine do
   # Two step have actor define behaviour using method name and state argments then have a second set of modues implement.
 end
 
+# Colorize states and mix with :observer.start
+defmodule Door do
+  use Actor
+  @color :blue
+  state Open
+  @color :red
+  state Close
+end
+
 # test extract from processes and use very same funcs that return state
 defmodule ActorTest do
   MyStateMachine.start_link(conf)
