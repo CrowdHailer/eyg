@@ -174,3 +174,36 @@ CALM add only facts
 program state saveable for debugging. see eve example. state should enclude sha of source file.
 
 checkout optional dependencies ie Rust ++ Cargo
+
+```elixir
+  test "calm principle" do
+    # MapSet.new()
+    #
+    [
+      {1, 0, "The"},
+      {4, 1, "quick brown fox"},
+      {6, 4, "jumped"},
+      {7, 6, "over"},
+      {11, 7, "the"},
+      {20, 11, "lazy dog."},
+    ]
+    # |> Enum.flat_map(fn(x) -> (for _ <- 0..4, do: x) |> Enum.take(:rand.uniform(5)) end)
+    |> Enum.flat_map(fn(x) -> (for _ <- 0..3, do: x) end)
+    |> Enum.shuffle()
+    # |> IO.inspect
+    |> rebuild([])
+    |> IO.inspect
+    # # CALM repo and hex project
+    #
+    # rebuild([{1, 0, "The"}], [])
+    # |> IO.inspect
+    # rebuild([], [])
+    # |> IO.inspect
+    # rebuild([{4, 1, "quick brown fox"}], [])
+    # |> IO.inspect
+  end
+  def rebuild([], output), do: output |> Enum.reduce("", fn({_, _, part}, buffer) -> "#{part} #{buffer}" end)
+  def rebuild([p = {_, 0, _data} | rest], []), do: rebuild(rest, [p])
+  def rebuild([p = {_, i, _new} | rest], output = [{i, _, _last} | _]), do: rebuild(rest, [p | output])
+  def rebuild([_p | rest], output), do: rebuild(rest, output)
+```
