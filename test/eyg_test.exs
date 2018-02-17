@@ -1,30 +1,64 @@
-defmodule Mack do
-  defmacro hi(a, b) do
-    IO.inspect(a)
-    quote do: unquote(b)
-  end
-end
 defmodule EygTest do
   use ExUnit.Case
-  doctest Eyg
 
-  require Mack
+  def reduce(:any, :int) do
+    :int
+  end
 
-  ast = quote do: 5 + 5
-  IO.inspect(ast)
-  Macro.prewalk(ast, fn (t) -> IO.inspect(t) end)
-  modi = Macro.postwalk(ast, fn
-    # (5) -> IO.inspect(10)
-    (t) -> IO.inspect(t)
-  end)
-  |> IO.inspect
-  Module.eval_quoted(__MODULE__, modi)
-  |> IO.inspect
-  import Mack
+  test "integer does not equal a string" do
+    ast = quote do
+      "3" = 3
+    end
+    {:error, _} = Eyg.check(ast)
+  end
+  test "integer can equal a integer" do
+    ast = quote do
+      3 = 3
+    end
+    {{:integer, ast}, _acc} = Eyg.check(ast)
+    assert {3, []} = Code.eval_quoted(ast)
+  end
+  test "type of expression is string" do
+    ast = quote do
+      a = 5
+      a
+    end
+    {{:integer, ast}, _acc} = Eyg.check(ast)
+    assert {5, _} = Code.eval_quoted(ast)
+  end
+  test "what about specs" do
+    quote do
+      @spec a() :: int
+    end
+    |> IO.inspect()
+  end
 
-  test "the truth" do
-    ast = quote do: Mack.hi(1, Mack.hi(2, 3))
-    Macro.expand_once(ast, __ENV__)
+  @tag :skip
+  test "inspecting some forms" do
+    ast = quote do
+      x = 5
+      y = 7
+      x + y
+    end
+    |> Macro.postwalk(%{}, fn
+      (i, acc) when is_integer(i) ->
+        {{:int, i}, acc}
+      (key = {var, env, context}, acc) when is_atom(context) ->
+        case Map.fetch(acc, key) do
+          :error ->
+            acc = Map.put(acc, key, :any)
+            {{:any, {var, env, context}}, acc}
+          {:ok, p} ->
+            IO.inspect(var)
+            IO.inspect(p)
+            {{:any, {var, env, context}}, acc}
+        end
+      ({:=, env, [{l_type, l}, {r_type, r}]}, acc) ->
+        type = reduce(l_type, r_type)
+        {{type, {:=, env, [l, r]}}, acc}
+      (other, acc) ->
+        {other, acc} |> IO.inspect
+    end)
     |> IO.inspect
   end
 end
