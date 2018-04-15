@@ -12,5 +12,19 @@ defmodule AardvarkTest do
 
   test "" do
     # simple succ tru false
+    # auto curried
+    {{:add, 3}, 2}
+    {{:point, 3}, 2}
+
+    # check x is not in scope
+    {:lambda, :x, {:lambda, :y, {{:add, :x}, :y}}}
+    # multi headed is a list of terms
+
+
+    # This needs an add_2 function, that function is built from successors and applied to the first function
+    {
+      {:lambda, :add_2, {:add_2, 1}},
+      {:lambda, :x, {:succ,{:succ, :x}}}
+    }
   end
 end

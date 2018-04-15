@@ -24,4 +24,20 @@ id(3) === 3
 {id {}}
 
 check({add, 2, ok})
+
+
+function sum(a, b) {
+  :math.add(a, b)
+}
+
+(
+  (assign, sum),
+  (function,
+    a,
+    (function,
+      b,
+      (
+        (:math.add, a),
+        b
+      )
 ```
