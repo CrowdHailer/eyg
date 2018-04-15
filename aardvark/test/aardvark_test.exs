@@ -4,10 +4,10 @@ defmodule AardvarkTest do
 
   test "type of id is the same" do
     program = {:succ, {:succ, 3}}
-    assert {:ok, {:integer, 5, 5}} = Aardvark.infer_type(program)
+    assert {:ok, {:integer, 5, 5}} = Aardvark.check(program)
 
     program = {:succ, {:succ, {:var, :a}}}
-    assert {:ok, {:integer, 3, 6}} = Aardvark.infer_type(program)
+    assert {:ok, {:integer, 3, 6}} = Aardvark.check(program)
   end
 
   test "" do
