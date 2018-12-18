@@ -5,8 +5,11 @@
 // An envelope wraps a message with an actor id that refers to which actor the message should be delivered.
 // NOTE two envelopes with the same id but different type are for different actors.
 // TODO parameterise the id type so it doesn't have to me an i32
+// This more represents mailboxes, message spec + id, can traits have default structs.
+// If so impl Mailbox<id, Message> {} could define an envelope
 #[derive(Copy, Clone)]
 pub struct Envelope<M> {
+    // Changing the id to a parameterised type means that Home needs to take yet another parameter, ideally it would just take a mailbox as parameter
     pub id: i32,
     pub message: M
 }
@@ -24,14 +27,13 @@ trait Deliverable<System> {
 type Todos<S> = Vec<Box<dyn Deliverable<S>>>;
 
 // A worker that processes all the message of a given type with the same actor id.
-// TODO this needs to return a vector of deliverables not i32.
-trait Worker<M>: Sized {
-    fn handle(self, message: &M) -> (Vec<i32>, Self);
+trait Worker<M, S>: Sized {
+    fn handle(self, message: &M) -> (Todos<S>, Self);
 }
 // The home trait specifies that a worker can be found for a certain message type
 // NOTE I think by using something like typemap it should not be required to have a user defined MySystem to store actors
-// It would require typemap to only hold things that implement actor, 
-trait Home<M, W: Worker<M>> {
+// It would require typemap to only hold things that implement actor,
+trait Home<M, S, W: Worker<M, S>> {
     fn get(&mut self, id: i32) -> W;
 }
 
@@ -49,14 +51,14 @@ mod tests {
     struct Bar();
     struct FooWorker();
     struct BarWorker();
-    impl Worker<Foo> for FooWorker {
-        fn handle(self, message: &Foo) -> (Vec<i32>, Self) {
+    impl Worker<Foo, MySystem> for FooWorker {
+        fn handle(self, message: &Foo) -> (Todos<MySystem>, Self) {
             println!("Foo processed {:?}", message);
-            (vec![], self)
+            (vec![Box::new(Envelope{id: 1, message: Bar()})], self)
         }
     }
-    impl Worker<Bar> for BarWorker {
-        fn handle(self, message: &Bar) -> (Vec<i32>, Self) {
+    impl Worker<Bar, MySystem> for BarWorker {
+        fn handle(self, message: &Bar) -> (Todos<MySystem>, Self) {
             println!("Bar processed {:?}", message);
             (vec![], self)
         }
@@ -72,12 +74,12 @@ mod tests {
             MySystem{foos: HashMap::new(), bars: HashMap::new()}
         }
     }
-    impl Home<Foo, FooWorker> for MySystem {
+    impl Home<Foo, MySystem, FooWorker> for MySystem {
         fn get(&mut self, id: i32) -> FooWorker {
             self.foos.remove(&id).unwrap_or(FooWorker())
         }
     }
-    impl Home<Bar, BarWorker> for MySystem {
+    impl Home<Bar, MySystem, BarWorker> for MySystem {
         fn get(&mut self, id: i32) -> BarWorker {
             self.bars.remove(&id).unwrap_or(BarWorker())
         }
@@ -87,9 +89,8 @@ mod tests {
         fn deliver(&self, mut my_system: MySystem) -> (Todos<MySystem>, MySystem) {
             let worker: FooWorker = my_system.get(self.id);
             // TODO put the updated worker back in the system
-            // TODO add the new outgoing messages to the returned list
-            let (_outbound, _new_worker) = worker.handle(&self.message);
-            (vec![], my_system)
+            let (outbound, _new_worker) = worker.handle(&self.message);
+            (outbound, my_system)
         }
     }
     impl Deliverable<MySystem> for Envelope<Bar> {
@@ -105,11 +106,29 @@ mod tests {
     fn it_works() {
         let e1 = Envelope{id: 1, message: Foo()};
         let e2 = Envelope{id: 1, message: Bar()};
-        let envelopes: Todos<MySystem> = vec![Box::new(e1), Box::new(e2)];
+        let mut envelopes: Todos<MySystem> = vec![Box::new(e1), Box::new(e2)];
         let mut my_system = MySystem::new();
-        for e in &envelopes {
-            let (_, new_system) = e.deliver(my_system);
-            my_system = new_system;
+        // for e in &envelopes {
+        //     let (_, new_system) = e.deliver(my_system);
+        //     my_system = new_system;
+        // }
+        // TODO this works in a funny order, pops the last message and then sticks new messages on the end.
+        // it should pop from one end and append messages on the other.
+        // Technically no order guarantees are given so this doesn't matter but it's weird.
+        while let Some(e) = envelopes.pop() {
+            let mut x = e.deliver(my_system);
+            envelopes.append(&mut x.0);
+            my_system = x.1;
+        }
+
+        let mut things = vec![1, 2, 3, 4];
+        while let Some(n) = things.pop() {
+            println!("{:?}", n);
+            if n == 3 {
+                let mut tmp = vec![5, 8];
+                tmp.append(&mut things);
+                things = tmp;
+            }
         }
         assert_eq!(2 + 2, 3);
     }
