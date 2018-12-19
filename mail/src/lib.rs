@@ -39,6 +39,7 @@ trait Worker<M: Mailbox, S>: Sized {
 // It would require typemap to only hold things that implement actor,
 trait Home<M: Mailbox, S, W: Worker<M, S>> {
     fn get(&mut self, id: M::Id) -> W;
+    fn put(&mut self, id: M::Id, worker: W);
 }
 
 pub struct Runtime<S>(S);
@@ -79,13 +80,17 @@ mod tests {
         type Id = ();
         type Message = Self;
     }
-    struct FooWorker();
+    #[derive(Debug)]
+    struct FooWorker(i32);
     #[derive(Debug, Copy, Clone)]
     struct BarWorker();
     impl Worker<Foo, MySystem> for FooWorker {
         fn handle(self, message: &Foo) -> (Todos<MySystem>, Self) {
             println!("Foo processed {:?}", message);
-            (vec![Box::new(Envelope::<Bar>{id: (), message: Bar()})], self)
+            (
+                vec![Box::new(Envelope::<Bar>{id: (), message: Bar()})],
+                FooWorker(self.0 + 1)
+            )
         }
     }
     impl Worker<Bar, MySystem> for BarWorker {
@@ -96,6 +101,7 @@ mod tests {
 
     }
     use std::collections::HashMap;
+    #[derive(Debug)]
     pub struct MySystem {
         foos: HashMap<i32, FooWorker>,
         bar: BarWorker
@@ -107,7 +113,10 @@ mod tests {
     }
     impl Home<Foo, MySystem, FooWorker> for MySystem {
         fn get(&mut self, id: <Foo as Mailbox>::Id) -> FooWorker {
-            self.foos.remove(&id).unwrap_or(FooWorker())
+            self.foos.remove(&id).unwrap_or(FooWorker(0))
+        }
+        fn put(&mut self, id: <Foo as Mailbox>::Id, worker: FooWorker) {
+            self.foos.insert(id, worker);
         }
     }
     impl Home<Bar, MySystem, BarWorker> for MySystem {
@@ -115,22 +124,29 @@ mod tests {
         fn get(&mut self, (): <Bar as Mailbox>::Id) -> BarWorker {
             self.bar
         }
+        fn put(&mut self, (): <Bar as Mailbox>::Id, worker: BarWorker) {
+            self.bar = worker;
+        }
     }
 
+    // <MySystem as Home<Foo>>
+    // Write this as system.process::<Foo>(self)
     impl Deliverable<MySystem> for Envelope<Foo> {
         fn deliver(&self, mut my_system: MySystem) -> (Todos<MySystem>, MySystem) {
             let id: <Foo as Mailbox>::Id = self.id;
             let worker: FooWorker = my_system.get(id);
-            // TODO put the updated worker back in the system
-            let (outbound, _new_worker) = worker.handle(&self.message);
+            let (outbound, new_worker) = worker.handle(&self.message);
+            my_system.put(id, new_worker);
             (outbound, my_system)
         }
     }
     impl Deliverable<MySystem> for Envelope<Bar> {
         fn deliver(&self, mut my_system: MySystem) -> (Todos<MySystem>, MySystem) {
-            let worker: BarWorker = my_system.get(self.id);
-            worker.handle(&self.message);
-            (vec![], my_system)
+            let id: <Bar as Mailbox>::Id = self.id;
+            let worker: BarWorker = my_system.get(id);
+            let (outbound, new_worker) = worker.handle(&self.message);
+            my_system.put(id, new_worker);
+            (outbound, my_system)
         }
     }
 
@@ -145,14 +161,19 @@ mod tests {
     // Good example of one of the reasons to use it.
     // Should be able to implement duplication/loss/reordering as a wrapper for handler.
     // return message in list and pass to wrapped handler for duplication, do nothing for loss.
+
+    // If the Actor has the state of a closure you should be able to write all sorts of possible unnecessaty helpers
+    // Monad.flat_map(Logger.debug("s"), {|_ok| -> do the rest})
+    // Gen::{Call, Sys, Cast}
     #[test]
     fn it_works() {
         let runtime = Runtime(MySystem::new());
         let e1 = Envelope::<Foo>{id: 1, message: Foo()};
         let e2 = Envelope::<Bar>{id: (), message: Bar()};
-        let envelopes: Todos<MySystem> = vec![Box::new(e1), Box::new(e2)];
+        let envelopes: Todos<MySystem> = vec![Box::new(e1), Box::new(e2), Box::new(e1)];
         let runtime = runtime.dispatch(envelopes);
-        runtime.dispatch(vec![]);
+        let runtime = runtime.dispatch(vec![]);
+        println!("{:?}", runtime.0);
         assert_eq!(2 + 2, 3);
     }
 }
