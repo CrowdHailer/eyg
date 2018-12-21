@@ -4,13 +4,13 @@
 
 // This might be better called the Channel/Protocol, it is the description of how to send messages.
 // Instead of mailbox.id consider channel.partition.
-pub trait Mailbox {
-    type Id: Copy + Eq + std::hash::Hash;
-    type Message: Copy;
+pub trait Mailbox: std::fmt::Debug {
+    type Id: std::fmt::Debug + Copy + Eq + std::hash::Hash;
+    type Message: std::fmt::Debug + Copy;
 }
 // An envelope is used to deliver messages to a specific mailbox.
 // NOTE two envelopes with the same id but different type are for different actors.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Envelope<M: Mailbox> {
     // Changing the id to a parameterised type means that Home needs to take yet another parameter, ideally it would just take a mailbox as parameter
     pub id: <M as Mailbox>::Id,
@@ -22,7 +22,7 @@ pub struct Envelope<M: Mailbox> {
 // So that each envelope can trivially implement the delivery protocol
 // NOTE It's probably more idiomatic to mutate the system and return mail/todos but sort after first version
 // NOTE rename system -> cohort???
-pub trait Deliverable<S> {
+pub trait Deliverable<S>: std::fmt::Debug {
     fn deliver(&self, system: S) -> (Todos<S>, S);
 }
 
@@ -31,23 +31,32 @@ pub struct GenSystem {
 }
 
 impl GenSystem {
-    fn new() -> Self {
+    pub fn new() -> Self {
         GenSystem{states: typemap::TypeMap::new()}
     }
+    pub fn insert<W: Worker<M, Self> + 'static + std::fmt::Debug, M: Mailbox + typemap::Key<Value=HashMap<<M as Mailbox>::Id, W>>>(mut self, id: <M as Mailbox>::Id, worker: W) -> Self {
+        let mut workers = self.states.remove::<M>().unwrap_or(HashMap::new());
+        // println!("{:?}", workers);
+        workers.insert(id, worker);
+        self.states.insert::<M>(workers);
+        self
+    }
 }
-
+// NOTE can edit system but only before passing to runtime
+// Runtime takes ownership of system when starting
 
 extern crate typemap;
 use std::collections::HashMap;
 // P for protocol/Mailbox
 // S for systemm
-impl<W: Worker<P, GenSystem> + 'static, P: Mailbox + typemap::Key<Value=HashMap<<P as Mailbox>::Id, W>>>
+impl<W: Worker<P, GenSystem> + 'static + std::fmt::Debug, P: Mailbox + typemap::Key<Value=HashMap<<P as Mailbox>::Id, W>>>
     Deliverable<GenSystem>
     for Envelope<P> {
+    // Clean up use pop and insert on system
     fn deliver(&self, mut system: GenSystem) -> (Todos<GenSystem>, GenSystem) {
         // let worker = system.states.remove::<P>().unwrap_or_else(|| W::new());
         let mut workers = system.states.remove::<P>().unwrap_or(HashMap::new());
-        let worker = workers.remove(&self.id).unwrap_or(W::new());
+        let worker = workers.remove(&self.id).unwrap_or_else(|| W::new());
         let (out, new_worker) = worker.handle(&self.message);
         workers.insert(self.id, new_worker);
         system.states.insert::<P>(workers);
@@ -61,10 +70,7 @@ pub type Todos<S> = Vec<Box<dyn Deliverable<S>>>;
 
 // A worker that processes all the message of a given type with the same actor id.
 pub trait Worker<M: Mailbox, S>: Sized {
-    fn new() -> Self {
-        // TODO remove
-        unimplemented!("Need new")
-    }
+    fn new() -> Self;
     fn handle(self, message: &M::Message) -> (Todos<S>, Self);
 }
 // The home trait specifies that a worker can be found for a certain message type

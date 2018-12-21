@@ -59,9 +59,17 @@ Main process and continuation
 
 Exhausive runtime
 
+### Embedded hello world
+
+Smallest Runtime
+
 ### Watercooler
 
 side-effects/driver
+
+### EygIO
+
+Create a separate crate for io implementations because the system will need to be extensible in this way. and this will prevent implementing parameterised traits.
 
 ## Notes
 
@@ -70,6 +78,25 @@ side-effects/driver
 e.g. Timeout.
 
 Also Sys/GenCall/Monitor (I think all these can be built on top of the base level)
+
+#### More effecient linear Runtime
+
+When applying a message to a worker.
+
+a) group at sender by address so all messages sent in one action to one actor, will be processed together. Nice for grouping log lines for examples.
+(Though that grouping might happen anyway)
+
+b) Group by Runtime
+Take the leading message find all with the same address and deliver at once,
+efficient if processes can be stashed or sleep. Might be a way to have essentally unlimited Process and not Crush memory, although still clearing up things like server processes might be nice
+
+### Have some property of Address that says if it can be recreated
+
+Some actors should die when no other actor has a reference to them,
+however some more persistent actors might be addressible over the network.
+
+It's possible that modelling everything as the first type and that a worker can process things for an entity at a different abstraction level.
+This Would probably be the simplest to implement
 
 ### Mailboxes cannot change message type
 
