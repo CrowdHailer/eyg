@@ -1,3 +1,4 @@
+pub mod v2;
 // Everything is based around handling a message type,
 // it is important that more than one type of message can exist in the system.
 // For example a Counter might have a message type that is an enum of Increment and Reset

@@ -90,6 +90,8 @@ b) Group by Runtime
 Take the leading message find all with the same address and deliver at once,
 efficient if processes can be stashed or sleep. Might be a way to have essentally unlimited Process and not Crush memory, although still clearing up things like server processes might be nice
 
+### Should Worker be able to handle more than one message type
+
 ### Have some property of Address that says if it can be recreated
 
 Some actors should die when no other actor has a reference to them,
