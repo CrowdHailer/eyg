@@ -1,7 +1,5 @@
 extern crate typemap;
 extern crate eyg;
-// Experiment for more than one mailbox
-
 
 mod sys_messages {
     pub enum Message {
@@ -17,8 +15,8 @@ pub mod public_messages {
 mod worker {
     use crate::public_messages;
     use crate::sys_messages;
-    use eyg::v2::GenSystem;
-    use eyg::v2::Mail;
+    use eyg::system::GeneralSystem;
+    use eyg::envelope::Mail;
 
     #[derive(Hash, Eq, PartialEq)]
     pub struct ID(pub i32);
@@ -30,23 +28,23 @@ mod worker {
     }
 
 
-    impl eyg::v2::Worker<public_messages::Message, GenSystem> for State {
+    impl eyg::worker::Worker<public_messages::Message, GeneralSystem> for State {
         fn new() -> Self {
             println!("{:?}", "New from Sys");
             State
         }
 
-        fn handle(self, _message: public_messages::Message) -> (Mail<GenSystem>, Self) {
+        fn handle(self, _message: public_messages::Message) -> (Mail<GeneralSystem>, Self) {
             (vec![], self)
         }
     }
 
-    impl eyg::v2::Worker<sys_messages::Message, GenSystem> for State {
+    impl eyg::worker::Worker<sys_messages::Message, GeneralSystem> for State {
         fn new() -> Self {
             println!("{:?}", "New from public");
             State
         }
-        fn handle(self, _message: sys_messages::Message) -> (Mail<GenSystem>, Self) {
+        fn handle(self, _message: sys_messages::Message) -> (Mail<GeneralSystem>, Self) {
             (vec![], self)
         }
     }
@@ -67,7 +65,7 @@ mod worker {
 //             //
 //             // })
 //         }
-//         fn wait(out: eyg::v2::Mail<eyg::v2::GenSystem>, fn: Fn) {
+//         fn wait(out: eyg::v2::Mail<eyg::system::GeneralSystem>, fn: Fn) {
 //             unimplemented!()
 //         }
 //     }
@@ -79,15 +77,18 @@ mod worker {
 // impl typemap::Key for OtherID {
 //     type Value = HashMap<OtherID, OtherWorker>;
 // }
-// let mut mail: eyg::v2::Mail<eyg::v2::GenSystem> = vec![Box::new(e1),Box::new(e2)];
-//     |                                                            ^^^^^^^^^^^^ the trait `eyg::v2::Worker<public_messages::Message, eyg::v2::GenSystem>` is not implemented for `OtherWorker`
+// let mut mail: eyg::v2::Mail<eyg::system::GeneralSystem> = vec![Box::new(e1),Box::new(e2)];
+//     |                                                            ^^^^^^^^^^^^ the trait `eyg::worker::Worker<public_messages::Message, eyg::system::GeneralSystem>` is not implemented for `OtherWorker`
 // Stops sending messges to a worker that does not implement them.
 
 fn main() {
-    let mut system = eyg::v2::GenSystem::new();
-    let e1 = eyg::v2::Envelope{id: worker::ID(1), message: public_messages::Message::Ping(1234)};
-    let e2 = eyg::v2::Envelope{id: worker::ID(1), message: sys_messages::Message::GetState};
-    let mut mail: eyg::v2::Mail<eyg::v2::GenSystem> = vec![Box::new(e1),Box::new(e2)];
+    use eyg::system::GeneralSystem;
+    use eyg::envelope::{Envelope, Mail};
+
+    let mut system = GeneralSystem::new();
+    let e1 = Envelope{address: worker::ID(1), message: public_messages::Message::Ping(1234)};
+    let e2 = Envelope{address: worker::ID(1), message: sys_messages::Message::GetState};
+    let mut mail: Mail<GeneralSystem> = vec![Box::new(e1),Box::new(e2)];
     while let Some(e) = mail.pop() {
         let (_, tmp) = e.deliver(system);
         system = tmp;

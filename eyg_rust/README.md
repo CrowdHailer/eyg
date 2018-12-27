@@ -3,21 +3,100 @@
 ## Actor implementation for Rust.
 
 Inspired by a desire for typed actors when working with Elixir.
-Note, although inspired by erlang/OTP process model it is in no way an error to reproduce that.
+*Note, although inspired by erlang/OTP process model this project is not an attempt to reproduce that process model.*
 
 All Actors/Workers/Processes in the system can be implemented as pure functions.
 In this regard the project may be closer to an executable model checker than other Actor implementations.
 
-#### Mailboxes
+## Example
 
-These are they key abstraction for this library.
-All mailboxes are defined by the type of the messages they can receive,
-and an identifier that separates mailboxes of the same kind of messages.
+In this example we implement a simple counter.
 
-*The type of messages a mailbox can receive is constant over time.
-In a distributed system messages can always arrive late so it is not possible to change what is acceptable.*
+### Create a type for the state of a counter
 
-#### Workers
+A simple counter needs no more state than the running total.
+
+```rust
+pub struct CounterState(i32);
+```
+
+### Define messages that may be sent to a counter.
+
+```rust
+// This might be better called the Channel/Protocol,
+// it is the description of how to send messages.
+use eyg::worker::Worker;
+use eyg::envelope::Mail;
+
+pub enum CounterMessage {
+    Increment,
+    // may messages might be added in the future ...
+}
+
+impl<S> Worker<CounterMessage, S> for CounterState {
+    fn new() -> Self {
+        CounterState(0)
+    }
+
+    fn handle(self, _message: CounterMessage) -> (Mail<S>, Self) {
+        (vec![], CounterState(self.0 + 1))
+    }
+}
+```
+*comment about moving new out or leaning on Default trait*
+
+### Establish workers at a type of address
+
+```rust
+#[derive(Hash, Eq, PartialEq)]
+pub struct CounterAddress(i32);
+
+use std::collections::HashMap;
+
+// This is how we specify how to look up workers in a general system implementation.
+// NOTE possibility to handle other types of actor systems.
+impl typemap::Key for CounterAddress {
+    type Value = HashMap<CounterAddress, CounterState>;
+}
+```
+
+### Apply a set of messages to a system of actors
+
+```rust
+fn main() {
+    use eyg::envelope::{Envelope, Mail};
+    use eyg::system::GeneralSystem;
+    use eyg::runtime::OrderedRuntime;
+
+    let mut system = GeneralSystem::new();
+
+    let envelope = Envelope{
+        address: CounterAddress(1),
+        message: CounterMessage::Increment
+    };
+
+    let mail = vec![Box::new(envelope),Box::new(envelope)];
+
+    let mut runtime = OrderedRuntime::new(system);
+    runtime = runtime.dispatch(mail);
+}
+```
+
+Need to add notes about error handling.
+Need io integration
+Need exhaustive testing
+
+## Glossary
+
+#### Worker
+
+implementing the `Worker` trait indicates that a given state (CounterState) can respond to a certain type of messages.
+
+A state may act as a worker for more than one kind of message,
+although it is common to implement only one. *comment about the continuation style workers.*
+
+*The type of messages a worker can process is constant over time.
+In a distributed system messages can always arrive late so it is not possible to change what messages are acceptable.*
 
 One worker will process sequentially all the messages received in a mailbox.
 High concurrency is achieved by having many mailboxes.
@@ -40,14 +119,23 @@ The collection of all workers.
 
 A General purpose system is provided that is build on top of typemap, or your own system can be built.
 
+##### Notes
+
+The home trait specifies that a worker can be found for a certain message type
+
+```rust
+pub trait Home<M: Mailbox, S, W: Worker<M, S>> {
+    fn get(&mut self, id: M::Id) -> W;
+    fn put(&mut self, id: M::Id, worker: W);
+}
+```
+
 #### Runtime
 
 Responsible for delivering dispatched messages to the appropriate worker.
 
 - OrderedRuntime: Runs through each message in order.
 - ExhaustiveRuntime: Check every message ordering.
-
-<!-- Janken Exhausive option -->
 
 ## Examples
 
