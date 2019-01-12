@@ -1,9 +1,8 @@
 [package]
-name = "pingu"
+name = "abacus"
 version = "0.1.0"
 authors = ["CrowdHailer <peterhsaxton@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-typemap = "0.3.3"
-eyg = { path = "../../"}
+eyg = { path = "../../eyg"}

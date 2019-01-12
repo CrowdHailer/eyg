@@ -1,8 +1,9 @@
 [package]
-name = "abacus"
+name = "hello_tcp"
 version = "0.1.0"
 authors = ["CrowdHailer <peterhsaxton@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-eyg = { path = "../../"}
+eyg = { path = "../../eyg"}
+mio = "0.6.16"

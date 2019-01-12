@@ -227,3 +227,9 @@ then then can be run on more than one machine. perhaps to reduce latency.
 
 Should be possible if messages are delivered in order, otherwise the session is very loosly specified as to not be valuable.
 Could just throw runtime exceptions if violated
+
+### Renaming
+
+The core project is the specification of a parralel program,
+it could be renamed `comms`, `eyg_core`, `eyg_model` etc.
+The top level eyg project coul just pull in this dependency
