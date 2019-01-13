@@ -1,3 +1,6 @@
+//! foo
+//!
+
 // Instead of mailbox.id consider channel.partition. address
 // address or partition id
 pub struct Envelope<A, M> {

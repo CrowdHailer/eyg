@@ -1,3 +1,8 @@
+//! # Eyg
+//!
+//! Message-passing framework Rust programs.
+
+pub mod gen;
 pub mod envelope;
 pub mod worker;
 pub mod system;
