@@ -1,3 +1,28 @@
+## 2019-01-19
+
+When a trait might be implemented multiple times on a type it is best not to specify how to create that type.
+
+For example
+
+```rs
+pub trait Worker<M, S> {
+    fn new() -> Self;
+    fn handle(self, message: M) -> (crate::envelope::Mail<S>, Self);
+}
+```
+
+Becomes
+
+```rs
+pub trait Handler<M, S> {
+    fn handle(self, message: M) -> (Mail<S>, Self);
+}
+```
+
+Making this change also allows considerations around configuration to be postponed.
+
+Should configuration be a system global value that is passed to each worker at startup, or should the required information be part of the first messages.
+
 ## 2019-01-13
 
 ```rust

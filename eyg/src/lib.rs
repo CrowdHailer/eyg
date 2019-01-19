@@ -3,6 +3,7 @@
 //! Message-passing framework Rust programs.
 
 pub mod gen;
+pub mod home;
 pub mod envelope;
 pub mod worker;
 pub mod system;
