@@ -32,15 +32,15 @@ pub type Mail<S> = Vec<Box<dyn Deliverable<S>>>;
 
 use std::collections::HashMap;
 
-impl<A, M, W> Deliverable<crate::system::GeneralSystem> for crate::envelope::Envelope<A, M>
-    where W: crate::worker::Worker<M, crate::system::GeneralSystem> + 'static,
-    A: typemap::Key<Value=HashMap<A, W>> + Eq + std::hash::Hash {
-    fn deliver(self: Box<Self>, mut system: crate::system::GeneralSystem) -> (Mail<crate::system::GeneralSystem>, crate::system::GeneralSystem) {
-        let mut workers = system.states.remove::<A>().unwrap_or(HashMap::new());
-        let worker = workers.remove(&self.address).unwrap_or_else(|| W::new());
-        let (out, new_worker) = worker.handle(self.message);
-        workers.insert(self.address, new_worker);
-        system.states.insert::<A>(workers);
-        (out, system)
-    }
-}
+// impl<A, M, W> Deliverable<crate::system::GeneralSystem> for crate::envelope::Envelope<A, M>
+//     where W: crate::worker::Worker<M, crate::system::GeneralSystem> + 'static,
+//     A: typemap::Key<Value=HashMap<A, W>> + Eq + std::hash::Hash {
+//     fn deliver(self: Box<Self>, mut system: crate::system::GeneralSystem) -> (Mail<crate::system::GeneralSystem>, crate::system::GeneralSystem) {
+//         let mut workers = system.states.remove::<A>().unwrap_or(HashMap::new());
+//         let worker = workers.remove(&self.address).unwrap_or_else(|| W::new());
+//         let (out, new_worker) = worker.handle(self.message);
+//         workers.insert(self.address, new_worker);
+//         system.states.insert::<A>(workers);
+//         (out, system)
+//     }
+// }
