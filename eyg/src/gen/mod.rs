@@ -25,7 +25,7 @@ pub enum GenServer<T> {
 }
 
 impl<T> GenServer<T> {
-    fn new(state: T) -> Self {
+    pub fn new(state: T) -> Self {
         GenServer::Running{state, monitors: HashMap::new()}
     }
 }
@@ -70,7 +70,7 @@ impl<A, W, Req, Resp, T> Worker<Call<A, Req, Resp>, GeneralSystem> for GenServer
     }
     fn handle(self, Call{caller, request}: Call<A, Req, Resp>) -> (Mail<GeneralSystem>, Self) {
         match self {
-            GenServer::Running{state, monitors} =>
+            GenServer::Running{state, monitors: _} =>
                 {
                     // Catch a panic, requires all types to implement
                     //  consider adding a `where A: std::panic::UnwindSafe` bound
@@ -101,8 +101,8 @@ struct Monitor<A> {
 address: A
 }
 struct Down {
-    error: Option<String>,
-    reference: i32
+    pub error: Option<String>,
+    pub reference: i32
 }
 // Needs demonitor
 impl<A, W, T> Worker<Monitor<A>, GeneralSystem> for GenServer<T>
@@ -227,7 +227,7 @@ mod test {
         let call = Call{caller: Caller{address: MyServerId(5), reference: 111, _response: PhantomData}, request: Only::One};
         let (_out, server) = server.handle(call);
         let monitor = Monitor{address: MyServerId(5)};
-        let (out, server) = server.handle(monitor);
+        let (out, _server) = server.handle(monitor);
         println!("Count - {:?}", out.iter().count());
         // let (_out, server) = server.handle(call);
         // let (_out, server) = server.handle(Caller{address: MyServerId(5), reference: 111, _response: PhantomData}, 21);

@@ -64,7 +64,7 @@ mod tests {
 
         let environment = HashMap::new();
         let envelope = Envelope{address: "my_counter".to_string(), message: ()};
-        let (mail, environment) = Box::new(envelope).deliver(environment);
+        let (_mail, environment) = Box::new(envelope).deliver(environment);
         println!("{:?}", environment);
         assert_eq!(2,3)
     }
