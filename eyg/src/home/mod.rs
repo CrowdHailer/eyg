@@ -34,6 +34,33 @@ impl<A, M, S> Deliverable<S> for Envelope<A, M> where S: Home<A, M> {
     }
 }
 
+mod task {
+    // This might not work so well if the task needs to access config, there is no create step for the task
+    pub struct Address;
+    pub struct State;
+    // Replace UNIT address and State with Task module something
+
+    impl<M, S> super::Handler<M, S> for State where M: FnOnce() -> super::Mail<S> {
+        fn handle(self, message: M) -> (super::Mail<S>, Self) {
+            (message(), self)
+        }
+    }
+
+    impl<M, S> super::Home<Address, M> for S where M: FnOnce() -> super::Mail<S> {
+        type Worker = State;
+
+        fn pop(self, _: &Address) -> (Self::Worker, Self) {
+            (State, self)
+        }
+        fn put(self, _: Address, _: State) -> Self {
+            self
+        }
+    }
+
+    pub fn run<F, S>(func: F) -> Box<super::Envelope<Address, F>> where F: FnOnce() -> super::Mail<S> {
+         Box::new(super::Envelope{address: Address, message: func})
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -66,6 +93,23 @@ mod tests {
         let envelope = Envelope{address: "my_counter".to_string(), message: ()};
         let (_mail, environment) = Box::new(envelope).deliver(environment);
         println!("{:?}", environment);
-        assert_eq!(2,3)
+        // assert_eq!(2,3)
+
+
+        let e = task::run(|| {
+            let messages = vec![];
+            messages
+        });
+
+        let _mail: Mail<()> = vec![e];
+        let e = task::run(|| {
+            println!("{:?}", "Running Task");
+            let messages = vec![];
+            messages
+        });
+        struct AnySystem { }
+        e.deliver(AnySystem{});
+        assert_eq!(2,3);
+        ()
     }
 }
