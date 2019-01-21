@@ -4,6 +4,7 @@
 
 pub mod gen;
 pub mod home;
+pub mod server;
 pub mod envelope;
 pub mod worker;
 pub mod system;

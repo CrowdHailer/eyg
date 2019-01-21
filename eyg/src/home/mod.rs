@@ -48,6 +48,15 @@ impl<A, M, S> Deliverable<S> for Envelope<A, M>
     }
 }
 
+// Might still be possible to make my server where it doesn't change and I just handle errors
+// BUT doing that means some wrapper in sent in messages
+// OR not
+// Maybe there is a forward trait that can be made
+// Maybe it's the wrong abstraction for a server! but then I cannot do Actors everywhere
+impl<S> Deliverable<S> for Envelope<i32, String>
+{
+
+}
 
 #[cfg(test)]
 mod tests {
